@@ -38,7 +38,10 @@ reserved = {
 	'read'		:'RES_READ',
 	'End'		:'RES_END',
 	'end'		:'E_END',
-	'return'	:'RES_RETURN'
+	'return'	:'RES_RETURN',
+	'tostr'		:'TOSTR',
+	'toint'		:'TOINT',
+	'lenght'	:'LEN',
 	}
 
 # Tokens
@@ -111,7 +114,7 @@ def t_CTE_FLOAT(t):
 
 # Constantes enteras
 def t_CTE_INT(t):
-	r'[0-9]+'
+	r'[-]*[0-9]+'
 	t.value = int(t.value)
 	return t
 
@@ -138,4 +141,4 @@ def t_error(t):
 	t.lexer.skip(1)
 
 # Construye el lexer
-lex.lex(optimize=1, lextab=None)
+lex.lex()

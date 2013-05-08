@@ -23,6 +23,27 @@ import cgi
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+# Consigue el mapa de tokens
+tokens = scanner.tokens
+start = 'programa'
+
+nombre_pro_act = None
+tipo_pro = None
+tipo_pro_actual  = None
+nombre_var_actual = None
+tipo_var = None
+memoria = 0
+esta_global = False
+nombre_var_asignacion = None
+oper = None
+nombre_var_for = None
+param = None
+dim_int = 0
+cont_dim = 0
+pila_dim = Stack()
+arr = None
+params = []
+
 class MainPage(webapp.RequestHandler):
     def get(self):
         self.response.out.write("""
@@ -37,22 +58,6 @@ class MainPage(webapp.RequestHandler):
 
 
 class Guestbook(webapp.RequestHandler):
-	tokens = scanner.tokens
-	start = 'programa'
-
-	nombre_pro_act = None
-	tipo_pro = None
-	tipo_pro_actual  = None
-	nombre_var_actual = None
-	tipo_var = None
-	memoria = 0
-	esta_global = False
-	nombre_var_asignacion = None
-	oper = None
-	nombre_var_for = None
-	param = None
-	dim_int = 0
-	cont_dim = 0
 	
 	def p_programa(t):
 		'''programa : ins_gt_main programa1 valida_entra_global generaglo programa2 valida_salir_gobal programa3 dir_gt_main main programa3
@@ -308,6 +313,54 @@ class Guestbook(webapp.RequestHandler):
 
 	def p_array(t):
 		'array : RES_ARRAY dato crea_arr LBRACKET dim RBRACKET genera_ms array1 '
+		global tipo_pro
+		global nombre_pro_act
+		global nombre_var_actual
+		global contEntLoc
+		global contFlotLoc
+		global contStrLoc
+		global contDoubleLoc
+		global contBoolLoc
+		global contEntGlo
+		global contFlotGlo
+		global coutDoubleGlo
+		global contStrGlo
+		global contBoolGlo
+		global memoria
+		global esta_global
+		mem = arr_mem(nombre_pro_act, nombre_var_actual)
+		if esta_global:
+			if tipo_pro.replace("arr", "") == "Integer":
+				memoria = contEntGlo
+				contEntGlo += mem
+			elif tipo_pro.replace("arr", "") == "Float":
+				memoria = contFlotGlo
+				contFlotGlo += mem
+			elif tipo_pro.replace("arr", "") == "Double":
+				memoria = coutDoubleGlo
+				coutDoubleGlo += mem
+			elif tipo_pro.replace("arr", "") == "String":
+				memoria = contStrGlo
+				contStrGlo += mem
+			elif tipo_pro.replace("arr", "") == "Boolean":
+				memoria = contBoolGlo 
+				contBoolGlo+= mem
+		else:
+			if tipo_pro.replace("arr", "") == "Integer":
+				memoria = contEntLoc
+				contEntLoc += mem
+			elif tipo_pro.replace("arr", "") == "Float":
+				memoria = contFlotLoc
+				contFlotLoc += mem
+			elif tipo_pro.replace("arr", "") == "Double":
+				memoria = contDoubleLoc
+				contDoubleLoc += mem
+			elif tipo_pro.replace("arr", "") == "String":
+				memoria = contStrLoc
+				contStrLoc += mem
+			elif tipo_pro.replace("arr", "") == "Boolean":
+				memoria = contBoolLoc 
+				contBoolLoc+=mem
 		pass
 
 	def p_genera_ms(t):
@@ -434,10 +487,10 @@ class Guestbook(webapp.RequestHandler):
 				break
 			elif pro.nombre_funcion == nombre_pro_act and pro.se_uso:
 				print "Sorry - function %s already exists" %nombre_pro_act
-				#sys.exit()
+				# sys.exit()
 			elif n+1 == len(tabla_pro):
 				print "Sorry - prototype %s doesn't exist" % nombre_pro_act
-				#sys.exit()
+				# sys.exit()
 		pass
 
 	def p_bloque(t):
@@ -487,7 +540,23 @@ class Guestbook(webapp.RequestHandler):
 		'call_proc_4 : '
 		global func_actual
 		global dirb_actual
+		global params
+		
+		params.reverse()
+		arg =[]
+		tipo = []
+		for param in params:
+			arg.append(pila_o.pop())
+			tipo.append(p_tipos.pop())
+
+		arg.reverse()
+		tipo.reverse()
+		for n,param in enumerate(params):
+			call_proc_3(param, arg[n], tipo[n])
+
 		call_proc_4(func_actual, dirb_actual)
+		
+		params=[]
 		pass
 
 	def p_seen_id_call(t):
@@ -496,6 +565,7 @@ class Guestbook(webapp.RequestHandler):
 		global func_actual
 		global param_actual
 		global dirb_actual
+		global procllamado
 		func_actual = t[1]
 		existe = existe_pro(func_actual)
 		call_proc_1(existe, func_actual)
@@ -520,9 +590,9 @@ class Guestbook(webapp.RequestHandler):
 	def p_call_proc_3(t):
 		'call_proc_3 : '
 		global param_actual
+		global params
 		if param_actual:
-			param = param_actual.pop()
-			call_proc_3(param)
+			params.append(param_actual.pop())
 		pass
 
 	def p_param(t):
@@ -551,12 +621,16 @@ class Guestbook(webapp.RequestHandler):
 
 
 	def p_asignacion(t):
-		'asignacion : seen_id_asignacion consarray EQUALS cuadruplo_exp_8_asignacion asignacion1 insert_asignacion cuadruplo_exp_9_asignacion'
+		'''asignacion : seen_id_asignacion consarray EQUALS cuadruplo_exp_8_asignacion asignacion1 insert_asignacion cuadruplo_exp_9_asignacion'''
 		pass
 
 	def p_cuadruplo_exp_8_asignacion(t):
 		'cuadruplo_exp_8_asignacion : '
-		exp_8("=")
+		global arr
+		if arr:
+			asign_arr()
+		else:
+			exp_8("=")
 		pass
 
 	def p_cuadruplo_exp_9_asignacion(t):
@@ -564,10 +638,18 @@ class Guestbook(webapp.RequestHandler):
 		exp_9()
 		pass 
 
+	# def p_asigna_arr(t):
+	# 	'asigna_arr : '
+	# 	asign_arr()
+	# 	pass
+
+
 	def p_seen_id_asignacion(t):
 		'seen_id_asignacion : ID '
 		global nombre_var_asignacion
+		global nombre_var_actual
 		nombre_var_asignacion = t[1]
+		nombre_var_actual = t[1]
 
 	def p_insert_asignacion(t):
 		'insert_asignacion : '
@@ -583,8 +665,23 @@ class Guestbook(webapp.RequestHandler):
 		'''asignacion1 : exp
 					   | asignlist
 					   | asignarray
+					   | see_llamada
+					   | convert
 					   '''
 		pass
+
+	def p_convert(t):
+		'''convert : TOSTR LPAREN exp RPAREN
+				   | TOINT LPAREN exp RPAREN
+				   '''
+		pass
+
+	def p_see_llamada(t):
+		''' see_llamada : llamada'''
+		global tabla_pro
+		asigna_llamada(func_actual, tabla_pro)
+		pass
+
 
 	def p_asignlist(t):
 		'asignlist : LCURLY asignlist1 RCURLY'
@@ -976,10 +1073,24 @@ class Guestbook(webapp.RequestHandler):
 		pass
 
 	def p_consarray(t):
-		'''consarray : LBRACKET dim_pos RBRACKET
+		'''consarray : is_dim LBRACKET dim_pos RBRACKET
 					| empty'''
+		pass
+
+	def p_is_dim(t):
+		'is_dim : '
+		global nombre_var_actual
+		global nombre_pro_act
+		global arr
 		global cont_dim
-		cont_dim = 0
+		if not es_dim(nombre_pro_act, nombre_var_actual):
+			print "Sorry, variable %s is neither a list nor an array" % nombre_var_actual
+			# sys.exit()
+		else:
+			cont_dim = 1
+			pila_dim.push(nombre_var_actual)
+			pila_dim.push(cont_dim)
+			arr = nombre_var_actual
 		pass
 
 	def p_dim_pos(t):
@@ -987,12 +1098,16 @@ class Guestbook(webapp.RequestHandler):
 		pass
 
 	def p_seen_int_pos(t):
-		'seen_int_pos : CTE_INT'
+		'''seen_int_pos : exp'''
 		global nombre_pro_act
 		global nombre_var_actual
+		global pila_dim
 		global cont_dim
-		pos = t[1]
-		verifica_tope(nombre_pro_act, nombre_var_actual, pos, cont_dim)
+		global arr
+		ls = get_ls(nombre_pro_act, arr, cont_dim)
+		m = get_m(nombre_pro_act, arr, cont_dim)
+		ln = arr_size(nombre_pro_act, arr)
+		verifica_tope_arr(ls, m, cont_dim, ln)
 		cont_dim+=1
 		pass
 
@@ -1017,7 +1132,7 @@ class Guestbook(webapp.RequestHandler):
 	def p_error(t):
 		print "Sorry, what did you mean by %s, at line %d?"%(t.value,t.lexer.lineno)
 		print "Sorry - Syntax error at token", t.value ,">>", t.type
-		#sys.exit()
+		# sys.exit()
 		# Just discard the token and tell the parser it's okay.
 		yacc.restart()
 
