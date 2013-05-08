@@ -45,7 +45,7 @@ def def_proc_1(nombre, tipo, dirb):
 	global tabla_pro
 	if existe_pro(nombre):
 		print "Sorry - the prototype %s already exist" %nombre
-		sys.exit()
+		#sys.exit()
 	pro = TablaProcedimientoNodo(nombre, tipo, dirb)
 	tabla_pro.append(pro)
 
@@ -67,55 +67,6 @@ def def_proc_4():
 	cuadruplo = Cuadruplo("ENDPROC", "", "", "")
 	insert_cuadruplo(cuadruplo)
 	pass
-
-def es_dim(proc, nom):
-	global tabla_pro
-	for n,pro in enumerate(tabla_pro):
-		if pro.nombre_funcion == proc:
-			for m,var in enumerate(tabla_pro[n].var):
-				if var.nombre_variable == nom:
-					if var.dim:
-						return True
-	return False
-
-def get_ls(proc, nom, n):
-	global tabla_pro
-	for n,pro in enumerate(tabla_pro):
-		if pro.nombre_funcion == proc:
-			for m,var in enumerate(tabla_pro[n].var):
-				if var.nombre_variable == nom:
-					return var.dim[n].ls
-	return 0
-
-def get_m(proc, nom, n):
-	global tabla_pro
-	for n,pro in enumerate(tabla_pro):
-		if pro.nombre_funcion == proc:
-			for m,var in enumerate(tabla_pro[n].var):
-				if var.nombre_variable == nom:
-					return var.dim[n].m
-	return 0
-
-def arr_mem(proc, nom):
-	global tabla_pro
-	for n,pro in enumerate(tabla_pro):
-		if pro.nombre_funcion == proc:
-			for m,var in enumerate(tabla_pro[n].var):
-				if var.nombre_variable == nom:
-					m = 1
-					for d in var.dim:
-						m*=(d.ls+1)
-					return m
-	return 0
-
-def arr_size(proc, nom):
-	global tabla_pro
-	for pro in tabla_pro:
-		if pro.nombre_funcion == proc:
-			for var in pro.var:
-				if var.nombre_variable == nom:
-					return len(var.dim)
-	return 0
 
 
 def print_tables(currentProList):
@@ -139,7 +90,7 @@ def insert_variable(nombre, tipo, dire, proc):
 
 	if existe_var(nombre,proc):
 		print "Sorry - the variable %s already exist"%nombre
-		sys.exit()
+		#sys.exit()
 	else:
 		for n,pro in enumerate(tabla_pro):
 			if pro.nombre_funcion == proc:
@@ -184,7 +135,7 @@ def verifica_tope(proc, nom, pos, dimn):
 					if var.dim:
 						if not (0 <= pos <= var.dim[dimn].ls):
 							print "Sorry, array %s out of bounds" %nom
-							sys.exit()
+							#sys.exit()
 
 def existe_pro(nombre):
 	global tabla_pro
@@ -212,7 +163,7 @@ def existe_param(nombre,proc):
 			for param in pro.param:
 				if param.nombre_variable == nombre:
 					print "Sorry - the parameter %s already exist"%nombre
-					sys.exit()
+					#sys.exit()
 	pass
 
 def busca_tipo(nombre,proc):
@@ -222,12 +173,7 @@ def busca_tipo(nombre,proc):
 		if pro.nombre_funcion == proc:
 			for variable in pro.var:
 				if variable.nombre_variable == nombre:
-					tipo_var = variable.tipo_dato
-					esta = True
-					return tipo_var
-			for param in pro.param:
-				if param.nombre_variable == nombre:
-					tipo_var = param.tipo_dato
+					tipo_var  = variable.tipo_dato
 					esta = True
 					return tipo_var
 			for variable in pro.param:
@@ -244,7 +190,7 @@ def busca_tipo(nombre,proc):
 					return tipo_var
 	if not esta:
 		print "Sorry - the variable  %s was not declared"%nombre
- 		sys.exit()
+ 		#sys.exit()
 
 	pass
 
@@ -258,9 +204,9 @@ def get_address(nombre,proc):
 					address_var  = variable.direccion
 					esta = True
 					return address_var
-			for param in pro.param:
-				if param.nombre_variable == nombre:
-					address_var  = param.direccion
+			for variable in pro.param:
+				if variable.nombre_variable == nombre:
+					address_var  = variable.direccion
 					esta = True
 					return address_var
 	for n,pro in enumerate(tabla_pro):
@@ -272,13 +218,13 @@ def get_address(nombre,proc):
 					return address_var
 	if not esta:
 		print "Sorry - the variable  %s was not declared"%nombre
- 		sys.exit()
+ 		#sys.exit()
 	pass
 
 def existe_var_asignar(tabla_var, nombre):
 	if not existe_var(tabla_var, nombre):
 		print "Sorry - Var " + nombre + " does not exist."
-		sys.exit()
+		#sys.exit()
 
 #tabla para ver que los valores si esten cambiando con forme se leen los cuadruplos
 def print_tables_alfinal(currentProList):
