@@ -11,6 +11,7 @@ from clases import Stack
 from cubo_semantico import cubo_semantico
 import os, sys
 from memory import *
+from tvariables import *
 
 cont_saltos = 0
 
@@ -181,6 +182,7 @@ def exp_7():
 
 def exp_8(oper):
 	p_oper.push(oper)
+
 
 def exp_9():
 	global contEntTmp
@@ -394,7 +396,7 @@ def genera_return(proc, tabla_pro):
 			ptipo = p_tipos.pop()
 			if tipo == ptipo:
 				res = pila_o.pop()
-				cuadruplo = Cuadruplo("RET", res, "", "")
+				cuadruplo = Cuadruplo("RETURN", res, "", "")
 				insert_cuadruplo(cuadruplo)
 				break
 			else:
@@ -413,11 +415,11 @@ def call_proc_2(nombre):
 	insert_cuadruplo(cuadruplo)
 	pass
 
-def call_proc_3(param):
+def call_proc_3(param, arg, tipo):
 	global tabla_pro
-	arg = pila_o.pop()
-	tipo_arg = p_tipos.pop()
-	if param.tipo_dato == tipo_arg:
+	# arg = pila_o.pop()
+	# tipo_arg = p_tipos.pop()
+	if param.tipo_dato == tipo:
 		cuadruplo = Cuadruplo("PARAM", arg, "", param.nombre_variable)
 		insert_cuadruplo(cuadruplo)
 	else:
@@ -430,30 +432,66 @@ def call_proc_4(nom, dirb):
 	insert_cuadruplo(cuadruplo)
 	pass
 
-# def def_arr_1(_id):
-# 	pila_o.push(_id)
-# 	pass
+def verifica_tope_arr(ls, m, n, ln):
+	global pila_o
+	global contEntTmp
+	cuadruplo = Cuadruplo("VER", pila_o.head(), 0, ls)
+	insert_cuadruplo(cuadruplo)
+	if n != ln:
+		p_tipos.pop()
+		cuadruplo = Cuadruplo("MULTM", pila_o.pop(), m, contEntTmp)
+		insert_cuadruplo(cuadruplo)
+		pila_o.push(contEntTmp)
+		contEntTmp+=1
+	if n>1:
+		op2 = pila_o.pop()
+		op1 = pila_o.pop()
+		cuadruplo = Cuadruplo("+", op1, op2, contEntTmp)
+		insert_cuadruplo(cuadruplo)
+		pila_o.push(contEntTmp)
+		contEntTmp+=1
+	pass
 
-# def def_arr_2():
-# 	pass
+def asign_arr():
+	global pila_o
+	op1 = pila_o.pop()
+	#op2 = pila_o.pop()
+	cuadruplo = Cuadruplo("=", "op2", "", "("+str(op1)+")")
+	insert_cuadruplo(cuadruplo)
+	pass
 
-# def def_arr_3():
-# 	pass
+def asigna_llamada(proc_actual, tabla_pro):
+	global contEntTmp
+	global contFlotTmp
+	global contStrTmp
+	global pila_o
+	if tabla_pro:
+		for proc in tabla_pro:
+			if proc.nombre_funcion == proc_actual:
+				if proc.tipo_retorno == 'Integer':
+					cont = contEntTmp
+					contEntTmp+=1
+					pila_o.push('RETURN')
+					p_tipos.push('Integer')
+				if proc.tipo_retorno == 'Float':
+					cont = contFlotTmp
+					contFlotTmp+=1
+					pila_o.push('RETURN')
+					p_tipos.push('Float')
+				if proc.tipo_retorno == 'String':
+					cont = contStrTmp
+					contStrTmp+=1
+					pila_o.push('RETURN')
+					p_tipos.push('String')
+	else:
+		print "No"
 
-# def def_arr_4():
-# 	pass
+def convertion(tipo_conver):
+	
+	pass
 
-# def def_arr_5():
-# 	pass
+				
 
-# def def_arr_6():
-# 	pass
-
-# def def_arr_7():
-# 	pass
-
-# def def_arr_8():
-# 	pass
 
 def get_cont_saltos():
 	global cont_saltos
@@ -467,17 +505,17 @@ def print_pilas():
 	global p_saltos
 
 	print "\n"
-	print "--Operando--"
+	print "--pila_o - Operando--"
 	pila_o.show()
 	#print 'cabeza pila o', pila_o.head()
 	print "\n"
-	print "--Tipos--"
+	print "--p_tipos - Tipos--"
 	p_tipos.show()
 	print "\n"
-	print "--Operador--" 
+	print "--p_oper - Operador--" 
 	p_oper.show()
 	print "\n"
-	print "--Saltos--"
+	print "--p_saltos - Saltos--"
 	p_saltos.show()
 	print "\n"
 
